@@ -1,0 +1,6 @@
+/build
+*.c
+*.so
+/tmp
+
+/__pycache__/
