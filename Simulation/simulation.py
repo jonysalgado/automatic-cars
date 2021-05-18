@@ -2,11 +2,12 @@ import pygame
 from pygame.rect import Rect
 from pygame.gfxdraw import pie
 from math import sin, cos, sqrt
-from Constants.constants import *
-from Utils.utils import *
+from params import *
+from utils import *
 from Simulation.Scenario import Scenario
-from Reural_network.main_neural import main_neural
+from Neural_network.main_neural import main_neural
 import numpy as np
+import time
 
 class Simulation(object):
     """
@@ -117,7 +118,7 @@ class Simulation(object):
         """
         restart = True
         for i in range(self.number_players):
-            if self.player[i].bumper_state == False:
+            if self.player[i].get_bumper_state() == False:
                 restart = False
 
         if restart == True:
@@ -165,10 +166,11 @@ class Simulation(object):
 
         :param window: pygame's window where the drawing will occur.
         """
-        
+        # start = time.time()
         self.scenario.drawBackgroundImage()
-        x = M2PIX * self.player[self.betterPlayer].pose.position.x
-        y = M2PIX * self.player[self.betterPlayer].pose.position.y
+        # print(time.time() - start)
+        # x = M2PIX * self.player[self.betterPlayer].pose.position.x
+        # y = M2PIX * self.player[self.betterPlayer].pose.position.y
         # pygame.draw.circle(self.scenario.window, COLOR_WHITE, (round(x),round(y)), 10, 0)
         
 

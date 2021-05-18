@@ -1,13 +1,13 @@
 from params import SCREEN_WIDTH, SCREEN_HEIGHT, FINISH_LINE
 import numpy as np
 cimport numpy as np
-from utils import Vector2
+from utils cimport Vector2
 
 cpdef np.ndarray[int, ndim=2] cost_function(collision_array):
 
-    cdef np.ndarray[double, ndim=2] array = collision_array
+    cdef np.ndarray[int, ndim=2] array = collision_array
     
-    cdef np.ndarray[int, ndim=2] cust_array = np.empty(
+    cdef np.ndarray[long, ndim=2] cust_array = np.empty(
         (SCREEN_WIDTH, SCREEN_HEIGHT), 
         dtype=int)
 
@@ -17,6 +17,7 @@ cpdef np.ndarray[int, ndim=2] cost_function(collision_array):
 
     cdef (int, int) node
     cdef np.ndarray[object, ndim=1] neighbors
+    cdef int x, y
 
     # preparing array
     for i in range(SCREEN_WIDTH):
@@ -42,9 +43,12 @@ cpdef np.ndarray[int, ndim=2] cost_function(collision_array):
         neighbors = find_neighbors(node)
         
         for i in range(8):
-            if cust_array[neighbors[i]] == -2:
-                queue.append(neighbors[i])
-                cust_array[neighbors[i]] = cust_array[node] + 100
+            if neighbors[i] != None:
+                x = neighbors[i][0]
+                y = neighbors[i][1]
+                if cust_array[x, y] == -2:
+                    queue.append(neighbors[i])
+                    cust_array[x, y] = cust_array[node] + 100
 
     return cust_array
      
@@ -52,14 +56,14 @@ cpdef np.ndarray[int, ndim=2] cost_function(collision_array):
 cpdef np.ndarray[object, ndim=1] find_neighbors((int, int) node):
 
     cdef np.ndarray[object, ndim=1] neighbors_node = np.empty(
-        8, 
+        9, 
         dtype=object)
     cdef int index = 0
     for di in range(-1,2):
             for dj in range(-1,2):
-                if is_index_valid(node[0] + di, node[1] + dj):
+                if is_index_valid(node[0] + di, node[1] + dj) and (di == 0 and dj == 0):
                     neighbors_node[index] = (node[0] + di, node[1] + dj)
-                index += 1
+                    index += 1
     
     return neighbors_node
 
