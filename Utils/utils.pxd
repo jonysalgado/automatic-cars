@@ -1,4 +1,4 @@
-cdef struct tuple_double_double
+cdef struct tuple_int_int
 cdef struct tuple_tuple_double
 
 
@@ -37,6 +37,6 @@ cdef class function_linear:
     cdef double total_angle, a, b
     cdef Pose centerPos
 
-    cdef inline tuple_double_double calcAB(self)
+    cdef inline tuple_int_int calcAB(self)
     cdef inline double y(self, double x)
     cdef inline double x(self, double y)

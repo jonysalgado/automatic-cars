@@ -48,7 +48,7 @@ cpdef np.ndarray[int, ndim=2] cost_function(collision_array):
                 y = neighbors[i][1]
                 if cust_array[x, y] == -2:
                     queue.append(neighbors[i])
-                    cust_array[x, y] = cust_array[node] + 100
+                    cust_array[x, y] = cust_array[node] + 1
 
     return cust_array
      

@@ -3,7 +3,8 @@ import numpy as np
 cimport numpy as np
 from sensors cimport Sensors
 from params import *
-from libc.math cimport cos, sin
+from libc.math cimport cos, sin, pi
+from neural_network cimport Neural_network
 
 cpdef double clamp(double value, double min, double max):
     """
@@ -26,14 +27,16 @@ cdef class Player:
     cdef public Pose pose
     cdef public double angular_speed
     cdef public bint bumper_state
-    cdef int number
+    cdef public int number
     cdef public int animationFrame
     cdef public bint controllable
     cdef public double distance
     cdef public object collision_array
     cdef public object sensors
+    cdef public object neural_network
+    cdef public Pose init_pose
 
-    cdef __cint__(self, int number):
+    def __cinit__(self, int number):
         self.linear_speed = 0.0
         self.angular_speed = 0.0
         self.bumper_state = False
@@ -43,12 +46,20 @@ cdef class Player:
         self.animationFrame = 1
         self.controllable = False
         self.distance = 0
+        self.pose = None
+        self.neural_network = None
+        self.init_pose = None
 
     cpdef Pose get_pose(self):
         return self.pose
     
     cpdef void set_pose(self, Pose pose):
+        self.init_pose = Pose(pose.position.x, pose.position.y, pose.rotation)
         self.pose = pose
+    
+    cpdef void init_neural_network(self):
+        self.neural_network = Neural_network()
+
 
     cpdef void initialSensors(self) except *:
         self.sensors = []
@@ -56,7 +67,7 @@ cdef class Player:
             self.sensors.append(Sensors(self.collision_array, self.pose, i))
 
 
-    cpdef void set_collision_array(self, np.ndarray[int, ndim=2] collision_array) except *:
+    cpdef void set_collision_array(self, np.ndarray[long, ndim=2] collision_array) except *:
         
         self.collision_array = collision_array
         self.initialSensors()
@@ -122,16 +133,18 @@ cdef class Player:
             self.pose.rotation += w * dt
 
     cpdef void networkController(self, np.ndarray[double, ndim=1] output):
+
         # move forward
-        if output[0] >= 0.5:
+        if output[0] > 0.5:
             self.set_velocity(self.linear_speed + FORWARD_SPEED, self.angular_speed)
-        if output[1] >= 0.5:
-            self.set_velocity(self.linear_speed - BACKWARD_SPEED, self.angular_speed)
-        if output[2] >= 0.5:
-            self.set_velocity(self.linear_speed, self.angular_speed-ANGULAR_SPEED)
-        if output[3] >= 0.5:
+        if output[1] > 0.5:
+            self.set_velocity(self.linear_speed + BACKWARD_SPEED, self.angular_speed)
+        if output[2] > 0.5:
             self.set_velocity(self.linear_speed, self.angular_speed+ANGULAR_SPEED)
-    
+        if output[3] > 0.5:
+            self.set_velocity(self.linear_speed, self.angular_speed-ANGULAR_SPEED)
+
+
     cpdef void userController(self, carsParameters):
 
         cdef str command
@@ -153,11 +166,18 @@ cdef class Player:
             elif command == 'right':
                 self.set_velocity(0, ANGULAR_SPEED)
     
-    cpdef void update(self, carsParameters):
+    cpdef void network_propagate(self):
+
+        cdef object inputNeural, outputNeural
+        inputNeural = [sensor.distance()["b"] for sensor in self.sensors]
+        inputNeural.append(self.linear_speed*M2PIX)
+        inputNeural.append(self.angular_speed)
+        outputNeural = self.neural_network.propagate(np.array(inputNeural))
+        self.networkController(outputNeural)
+    
+    cpdef void update(self):
         """
         Updates the robot.
         """
-
-        if carsParameters != None:
-            self.userController(carsParameters)
+        self.network_propagate()
         self.move()

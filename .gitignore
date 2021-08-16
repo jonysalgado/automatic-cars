@@ -1,4 +1,4 @@
-/build
+build/*
 *.c
 *.so
 /tmp
@@ -6,3 +6,11 @@
 /__pycache__/
 
 .pyc
+
+# csv
+*.csv
+.vscode
+
+__pycache__
+
+.ipynb_checkpoints

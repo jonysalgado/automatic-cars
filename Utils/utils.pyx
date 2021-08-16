@@ -2,12 +2,12 @@ from params import M2PIX
 from libc.math cimport round, sqrt, cos, sin, atan, tan, M_PI
 cimport utils
 
-cdef struct tuple_double_double:
+cdef struct tuple_int_int:
     double a
     double b
 
 cdef struct tuple_tuple_double:
-    tuple_double_double a
+    tuple_int_int a
     double b
 
 
@@ -95,9 +95,9 @@ cdef class function_linear:
         self.centerPos = centerPos
         self.a, self.b = self.calcAB().a, self.calcAB().b
 
-    cdef inline tuple_double_double calcAB(self):
+    cdef inline tuple_int_int calcAB(self):
         cdef double y0, x0, a, b
-        cdef tuple_double_double output
+        cdef tuple_int_int output
         y0 = round(self.centerPos.position.y  * M2PIX)
         x0 = round(self.centerPos.position.x  * M2PIX)
         a = tan(self.total_angle)
